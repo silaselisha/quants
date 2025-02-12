@@ -26,15 +26,15 @@ def save_asset_data(symbol, conn, start_date=None, end_date=None):
         index=False
     )
 
-def save_last_trading_sess(symbol, conn, today):
-    data = get_asset_data(symbol, today, today)
+def save_last_trading_sess(symbol, conn, yesterday, today):
+    data = get_asset_data(symbol, yesterday, today)
     data.to_sql(
         'stock_data',
         conn,
         if_exists='append',
         index=False
     )
-
+    
 if __name__ == '__main__':
     conn = sqlite3.connect('market_data.sqlite')
     if argv[1] == 'bulk':
@@ -48,9 +48,9 @@ if __name__ == '__main__':
         calendars = argv[3]
         cals = xcals.get_calendar(calendars)
         today = pd.Timestamp.today().date()
-        print(today)
         if cals.is_session(today):
-            save_last_trading_sess(symbol, conn, today)
+            yesterday = today - pd.Timedelta(days=1)
+            save_last_trading_sess(symbol, conn, yesterday, today)
             print(f'{symbol} saved ')
         else:
             print(f'{today} is not a trading day. Doing Nothing!!!')
